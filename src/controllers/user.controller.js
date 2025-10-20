@@ -16,7 +16,7 @@ const generateAccessAndRefereshTokens = async(userId) => {
            user.refreshToken = refreshToken
            await user.save({  validateBeforeSave: false })
 
-           return { accessToken , refreshToken }     
+           return { accessToken , refreshToken }         
           
      }catch(error){
         throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
@@ -45,7 +45,7 @@ const registerUser = asyncHandler( async (req , res) =>{
         ){
              throw new ApiError(400 , "ALl field are required")    
         }
-       
+         
         
       const existeduser = await User.findOne({
             $or: [{ username } , { email }] 
@@ -124,8 +124,7 @@ const loginUser = asyncHandler(  async (req, res) => {
              }
 
              const isPaswordValid =  await user.isPasswordCorrect(password)
-
-             if (isPaswordValid) {
+             if (!isPaswordValid) {
                 throw new ApiError(401 , "Invalid user crendtials")
             } 
 
@@ -155,7 +154,9 @@ const loginUser = asyncHandler(  async (req, res) => {
 const logoutUser = asyncHandler ( async (req,res) => {
       await User.findOneAndUpdate(
              req.user._id , {
-                 $unset: 1
+                  $unset: {
+                refreshToken: 1 
+            } 
              },
              {
                 new: true
@@ -203,8 +204,8 @@ const refreshAccessToken = asyncHandler ( async (req,res) => {
     
     const { accessToken , newRefreshToken } =   await generateAccessAndRefereshTokens(user._id)
     
-        return res
-        .res(200)
+        return res 
+        .status(200)
         .cookie("accessToken" , accessToken, options)
         .cookie("refreshToken", newRefreshToken , options )  
         .json(
@@ -286,7 +287,7 @@ const updateUserAvatar = asyncHandler( async (req,res) => {
             req.user?._id,
             {
                 $set:{
-                     avatar: avatar_url 
+                     avatar: avatar.url 
                 }
             },
             {new: true}
@@ -336,7 +337,7 @@ const updateUserCoverImage = asyncHandler( async (req,res) => {
 const getUserChannelProfile = asyncHandler ( async (req,res) => {
 
     const { username } =  req.params
-
+     
     if(!username?.trim()){
          throw new ApiError(400 , "username is missing");
     }

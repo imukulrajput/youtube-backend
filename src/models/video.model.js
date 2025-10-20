@@ -21,21 +21,21 @@ const videoSchema = new mongoose.Schema({
         },
          duration: {
              type:Number, 
-            required: true 
+             required: true 
          },
          views: {           
             type: Number,
-            default: 0
+            default: 0    
          },
          isPublished: {
              type: Boolean
          },
          owner: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "user"
+            ref: "User"
          }
 
-}, {timestamps:true});
+}, {timestamps:true});  
 
 
 
